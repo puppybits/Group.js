@@ -1,0 +1,31 @@
+{
+  "name": "Group.js",
+  "version": "1.0.0",
+  "description": "Array grouping ",
+  "main": "Group.js",
+  "scripts": {
+    "build": "mkdir -p bin && babel Group.js > ./bin/Group.js",
+    "test": "open http://localhost:8000 && python -m SimpleHTTPServer"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/puppybits/Group.js"
+  },
+  "keywords": [
+    "js",
+    "javascript",
+    "grouping",
+    "sorting",
+    "array",
+    "utils"
+  ],
+  "author": "puppybits@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/puppybits/Group.js/issues"
+  },
+  "homepage": "https://github.com/puppybits/Group.js",
+  "devDependencies": {
+    "babel": "^5.1.13"
+  }
+}
