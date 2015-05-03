@@ -35,19 +35,20 @@ let Group = (function(){
 		}
 
 		count(idxPath) {
-			return drill(idxPath || 0, this[IDX]).count;
+			return (idxPath ? drill(idxPath || 0, this[IDX]).count : this[IDX].length);
 		}
 
 		title(idxPath) {
-			return (idxPath ? drill(idxPath || 0, this[IDX]).title : this[ARR].map(e => e.title);
+			return (idxPath ? drill(idxPath || 0, this[IDX]).title : this[ARR].map(e => e.title));
 		}
 
-		item(indexPath) {
-			if (!indexPath) {
-				return items();
-			}
+		item(idxPath) {
+			let row = idxPath.splice(-1)[0];
 			let i = drill(idxPath || 0, this[IDX]);
-			let j = i.idx -1 + idxPath[idxPath.length-1]-1;
+			if (i === undefined) {
+				return undefined;
+			}
+			let j = i.idx + row;
 			return this[ARR][j];
 		}
 
@@ -65,9 +66,10 @@ let Group = (function(){
 		},{});
 
 	let drill = (path, arr) => {
-		var p = path[0]; 
+		var p = path[0],
+		sub = Array.isArray(arr) ? arr[p] : arr.sub[p];
 		path = path.slice(1);
-		return (Array.isArray(path) && path.length ? drill(path, arr[p]) : arr[p]);
+		return (Array.isArray(path) && path.length ? drill(path, sub) : sub);
 	};
 
 	let _groupOn = (arr, props, matchers) => {
@@ -77,7 +79,7 @@ let Group = (function(){
 	        return ref;
 	      }
 
-	      if (matchers[d](a[props[d]], lasts[d]) === 0) {
+	      if (lasts[d] !== undefined && matchers[d](a[props[d]], lasts[d]) === 0) {
 	        ref.count++;  
 	      } else {
 	        ref = {count:1, idx:i, sub:[]};
@@ -97,7 +99,7 @@ let Group = (function(){
 
 	  // kick off grouping each row
 	  let results = arr.reduce((idxs, a, i) => {
-	    var ref = (idxs.length && idxs[idxs.length-1] || {count:0, idx:i, sub:[]});
+	    var ref = (idxs.length && idxs[idxs.length - 1] || { count: 0, idx:i, sub: [] });
 	    ref = mapProp(0, a, ref, i);
 	    if (ref.count === 1) {
 	      idxs.push(ref);

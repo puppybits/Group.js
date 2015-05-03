@@ -8,9 +8,9 @@ var _inherits = function (subClass, superClass) { if (typeof superClass !== 'fun
 
 var Group = (function () {
 
-	var ARR = Symbol(),
-	    IDX = Symbol(),
-	    SORT = Symbol();
+	var ARR = Symbol('ARR'),
+	    IDX = Symbol('IDX'),
+	    SORT = Symbol('SORT');
 
 	var Group = (function (_Object) {
 		function Group(arr, sort) {
@@ -27,6 +27,7 @@ var Group = (function () {
 			});
 			_this[SORT] = Array.isArray(sort) ? sort : Object.keys(sort);
 
+			// use default sort or allow for supplied custom sorting function
 			var sorting = Array.isArray(sort) ? Array.apply(null, new Array(sort.length)).map(function () {
 				return function (a, b) {
 					return a > b ? 1 : a < b ? -1 : 0;
@@ -35,9 +36,11 @@ var Group = (function () {
 				return sort[s];
 			});
 
+			// data must be sorted first
 			if (!presorted) {
 				_this[ARR].sort(function (a, b) {
 					var result = undefined;
+					// sort on depth of sorters, only matches on higher level drills to lower levels
 					sorting.some(function (sorter, d) {
 						result = sorter(a[_this[SORT][d]], b[_this[SORT][d]]);
 						return result === 0 ? false : true;
@@ -55,14 +58,14 @@ var Group = (function () {
 		_createClass(Group, [{
 			key: 'count',
 			value: function count(idxPath) {
-				return (idxPath ? drill(idxPath || 0, this[IDX]).count : this[IDX].length);
+				return idxPath ? drill(idxPath || 0, this[IDX]).count : this[IDX].length;
 			}
 		}, {
 			key: 'title',
 			value: function title(idxPath) {
-				return (idxPath ? drill(idxPath || 0, this[IDX]).title : this[IDX].map(function(e) {
+				return idxPath ? drill(idxPath || 0, this[IDX]).title : this[ARR].map(function (e) {
 					return e.title;
-				}));
+				});
 			}
 		}, {
 			key: 'item',
@@ -105,7 +108,7 @@ var Group = (function () {
 		return drill;
 	})(function (path, arr) {
 		var p = path[0],
-		sub = Array.isArray(arr) ? arr[p] : arr.sub[p];
+		    sub = Array.isArray(arr) ? arr[p] : arr.sub[p];
 		path = path.slice(1);
 		return Array.isArray(path) && path.length ? drill(path, sub) : sub;
 	});
@@ -130,14 +133,14 @@ var Group = (function () {
 			if (lasts[d] !== undefined && matchers[d](a[props[d]], lasts[d]) === 0) {
 				ref.count++;
 			} else {
-				ref = { count: 1, idx:i, sub: [] };
-				lasts.splice(d + 1);
+				ref = { count: 1, idx: i, sub: [] };
+				lasts.splice(d + 1); // reset back to the current level
 			}
 			lasts[d] = a[props[d]];
 			// debugging
 			ref.title = a[props[d]];
 
-			var sub = ref.sub.length && ref.sub[ref.sub.length - 1] || { count: 0, idx:i, sub: [] };
+			var sub = ref.sub.length && ref.sub[ref.sub.length - 1] || { count: 0, idx: i, sub: [] };
 			sub = mapProp(d + 1, a, sub, i);
 			if (sub.count === 1) {
 				ref.sub.push(sub);
@@ -147,14 +150,13 @@ var Group = (function () {
 
 		// kick off grouping each row
 		var results = arr.reduce(function (idxs, a, i) {
-			var ref = idxs.length && idxs[idxs.length - 1] || { count: 0, idx:i, sub: [] };
+			var ref = idxs.length && idxs[idxs.length - 1] || { count: 0, idx: i, sub: [] };
 			ref = mapProp(0, a, ref, i);
 			if (ref.count === 1) {
 				idxs.push(ref);
 			}
 			return idxs;
 		}, []);
-		
 		return results;
 	};
 
